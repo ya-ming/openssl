@@ -21,7 +21,7 @@ int verify_callback(int ok, X509_STORE_CTX *ctx)
   return 1;
 }
 
-int main()
+int main(int argc, char **argv)
 {
   // setting up SSL/TLS
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -34,17 +34,42 @@ int main()
   SSL_CTX_set_max_proto_version(ctx.get(), TLS1_2_VERSION);
 #endif
 
-  if (SSL_CTX_use_certificate_file(ctx.get(), "server-cert.pem", SSL_FILETYPE_PEM) <= 0)
+  char *server_cert_path = "server-cert.pem";
+  char *key_path = "server-key.pem";
+  char *client_cert_path = "client-cert.pem";
+  if (argc > 1)
+  {
+    if (strncmp("ca", argv[1], 2) == 0)
+    {
+      server_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain.cert.pem";
+      key_path = "../../ca/root/ca/intermediate/private/localhost.key.pem";
+      client_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain-client.cert.pem";
+    }
+  }
+
+  if (SSL_CTX_use_certificate_file(ctx.get(), server_cert_path, SSL_FILETYPE_PEM) <= 0)
   {
     my::print_errors_and_exit("Error loading server certificate");
   }
-
-  if (SSL_CTX_use_PrivateKey_file(ctx.get(), "server-key.pem", SSL_FILETYPE_PEM) <= 0)
+  if (SSL_CTX_use_PrivateKey_file(ctx.get(), key_path, SSL_FILETYPE_PEM) <= 0)
   {
     my::print_errors_and_exit("Error loading server private key");
   }
 
-  if (SSL_CTX_load_verify_locations(ctx.get(), "client-cert.pem", nullptr) != 1)
+    /* verify private key */
+    if ( !SSL_CTX_check_private_key(ctx.get()) )
+    {
+        printf("Private key does not match the public certificate\n");
+        abort();
+    }
+
+  // the certificates in the chain are listed in ca-chain.cert, and loaded via SSL_CTX_use_certificate_file
+  // if (SSL_CTX_use_certificate_chain_file(ctx.get(), server_cert_path) <= 0)
+  // {
+  //   my::print_errors_and_exit("Error loading CA chain certificate");
+  // }
+
+  if (SSL_CTX_load_verify_locations(ctx.get(), client_cert_path, nullptr) != 1)
   {
     my::print_errors_and_exit("Error setting up trust store");
   }
