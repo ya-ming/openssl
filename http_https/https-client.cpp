@@ -31,9 +31,19 @@ int main(int argc, char *argv[])
   }
   else
   {
-    if (SSL_CTX_load_verify_locations(ctx.get(), "server-certificate.pem", nullptr) != 1)
+    if (SSL_CTX_load_verify_locations(ctx.get(), "server-cert.pem", nullptr) != 1)
     {
       my::print_errors_and_exit("Error setting up trust store");
+    }
+
+    if (SSL_CTX_use_certificate_file(ctx.get(), "client-cert.pem", SSL_FILETYPE_PEM) <= 0)
+    {
+      my::print_errors_and_exit("Error loading client certificate");
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx.get(), "client-key.pem", SSL_FILETYPE_PEM) <= 0)
+    {
+      my::print_errors_and_exit("Error loading server private key");
     }
   }
   // Endof setting up

@@ -209,23 +209,34 @@ namespace my
     }
     return ssl;
   }
-
+  
   void verify_the_certificate(SSL *ssl, const std::string &expected_hostname)
   {
+    char data[256];
+
     int err = SSL_get_verify_result(ssl);
     if (err != X509_V_OK)
     {
       const char *message = X509_verify_cert_error_string(err);
-      fprintf(stderr, "Certificate verification error: %s (%d)\n", message, err);
+      printf("Certificate verification error: %s (%d)\n", message, err);
       exit(1);
+    }
+    else
+    {
+      printf("Certificate verified\n");
     }
 
     X509 *cert = SSL_get_peer_certificate(ssl);
     if (cert == nullptr)
     {
-      fprintf(stderr, "No certificate was presented by the server\n");
+      printf("No certificate was presented\n");
       exit(1);
     }
+
+    X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
+    printf(" issuer = %s\n", data);
+    X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
+    printf(" subject = %s\n", data);
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     if (X509_check_host(cert, expected_hostname.data(), expected_hostname.size(), 0, nullptr) != 1)

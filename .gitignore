@@ -34,3 +34,4 @@
 # Private files
 *.pem
 *.dat
+*.key
