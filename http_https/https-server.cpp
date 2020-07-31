@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   {
     if (strncmp("ca", argv[1], 2) == 0)
     {
-      server_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain.cert.pem";
+      server_cert_path = "../../ca/root/ca/intermediate/certs/localhost.cert.pem";
       key_path = "../../ca/root/ca/intermediate/private/localhost.key.pem";
       client_cert_path = "../../ca/root/ca/intermediate/certs/client-all.cert.pem";
     }

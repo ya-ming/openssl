@@ -7,6 +7,9 @@ Based on the posts at https://quuxplusone.github.io/blog/2020/01/24/openssl-part
 * http_https
   * http server and client
   * https server and client
+    * `./https-server.out ca`
+    * `./https-client.out localhost 8080 ca client`
+    * `./https-client.out localhost 8080 ca client2`
   * client certificate verification
 
 ## Examples of using openssl

@@ -1,5 +1,8 @@
 #include "my.h"
 
+#define CA_CERT_PATH "../../ca/root/ca/intermediate/certs/"
+#define CA_KEY_PATH "../../ca/root/ca/intermediate/private/"
+
 int main(int argc, char *argv[])
 {
   char *hostname = "duckduckgo.com";
@@ -10,26 +13,27 @@ int main(int argc, char *argv[])
     port = argv[2];
   }
 
-  char *server_cert_path = "server-cert.pem";
-  char *key_path = "client-key.pem";
-  char *client_cert_path = "client-cert.pem";
+  char server_cert_path[200], key_path[200], client_cert_path[200];
+  sprintf(server_cert_path, "server-cert.pem");
+  sprintf(key_path, "client-key.pem");
+  sprintf(client_cert_path, "client-cert.pem");
   if (argc > 3)
   {
     if (strncmp("ca", argv[3], 2) == 0)
     {
-      server_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain.cert.pem";
-      key_path = "../../ca/root/ca/intermediate/private/client.key.pem";
-      client_cert_path = "../../ca/root/ca/intermediate/certs/client.cert.pem";
+      sprintf(server_cert_path, CA_CERT_PATH"ca-chain.cert.pem");
+      sprintf(key_path, CA_KEY_PATH"client.key.pem");
+      sprintf(client_cert_path,  CA_CERT_PATH"client.cert.pem");
     }
   }
 
   if (argc > 4)
   {
-    if (strncmp("2", argv[4], 1) == 0)
-    {
-      key_path = "../../ca/root/ca/intermediate/private/client2.key.pem";
-      client_cert_path = "../../ca/root/ca/intermediate/certs/client2.cert.pem";
-    }
+      // sprintf(server_cert_path, "%s%s", CA_CERT_PATH, argv[4]);
+      sprintf(key_path, "%s%s%s", CA_KEY_PATH, argv[4], ".key.pem");
+      sprintf(client_cert_path, "%s%s%s", CA_CERT_PATH, argv[4], ".cert.pem");
+      printf("keypath: %s\n", key_path);
+      printf("client_cert_path: %s\n", client_cert_path);
   }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
