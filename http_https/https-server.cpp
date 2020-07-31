@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     {
       server_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain.cert.pem";
       key_path = "../../ca/root/ca/intermediate/private/localhost.key.pem";
-      client_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain-client.cert.pem";
+      client_cert_path = "../../ca/root/ca/intermediate/certs/client-all.cert.pem";
     }
   }
 

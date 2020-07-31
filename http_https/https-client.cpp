@@ -19,7 +19,16 @@ int main(int argc, char *argv[])
     {
       server_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain.cert.pem";
       key_path = "../../ca/root/ca/intermediate/private/client.key.pem";
-      client_cert_path = "../../ca/root/ca/intermediate/certs/ca-chain-client.cert.pem";
+      client_cert_path = "../../ca/root/ca/intermediate/certs/client.cert.pem";
+    }
+  }
+
+  if (argc > 4)
+  {
+    if (strncmp("2", argv[4], 1) == 0)
+    {
+      key_path = "../../ca/root/ca/intermediate/private/client2.key.pem";
+      client_cert_path = "../../ca/root/ca/intermediate/certs/client2.cert.pem";
     }
   }
 
