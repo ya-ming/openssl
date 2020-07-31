@@ -1,5 +1,7 @@
 #include "my.h"
 
+#include <openssl/x509_vfy.h>
+
 int verify_callback(int ok, X509_STORE_CTX *ctx)
 {
   char buf[256];
@@ -12,11 +14,28 @@ int verify_callback(int ok, X509_STORE_CTX *ctx)
 
   char data[256];
   X509_NAME_oneline(X509_get_issuer_name(err_cert), data, 256);
-  printf(" issuer = %s\n", data);
+  printf("verify_callback issuer = %s\n", data);
   X509_NAME_oneline(X509_get_subject_name(err_cert), data, 256);
-  printf(" subject = %s\n", data);
+  printf("verify_callback subject = %s\n", data);
 
   // ssl = (SSL *)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+  if (err != X509_V_OK)
+  {
+    if (err != X509_V_ERR_UNABLE_TO_GET_CRL)
+    {
+      const char *message = X509_verify_cert_error_string(err);
+      printf("Certificate verification error: %s (%d)\n", message, err);
+      return 0;
+    }
+    else
+    {
+      printf("X509_V_ERR_UNABLE_TO_GET_CRL\n");
+    }
+  }
+  else
+  {
+    printf("Certificate verified\n");
+  }
 
   return 1;
 }
@@ -41,9 +60,10 @@ int main(int argc, char **argv)
   {
     if (strncmp("ca", argv[1], 2) == 0)
     {
-      server_cert_path = "../../ca/root/ca/intermediate/certs/localhost.cert.pem";
-      key_path = "../../ca/root/ca/intermediate/private/localhost.key.pem";
-      client_cert_path = "../../ca/root/ca/intermediate/certs/client-all.cert.pem";
+      // the certificates in the chain are listed in ca-chain.cert, and loaded via SSL_CTX_use_certificate_file
+      server_cert_path = "/home/osboxes/cpp/ca/root/ca/intermediate/certs/ca-chain.cert.pem";
+      key_path = "/home/osboxes/cpp/ca/root/ca/intermediate/private/localhost.key.pem";
+      client_cert_path = "/home/osboxes/cpp/ca/root/ca/intermediate/certs/client-all.cert.pem";
     }
   }
 
@@ -56,23 +76,45 @@ int main(int argc, char **argv)
     my::print_errors_and_exit("Error loading server private key");
   }
 
-    /* verify private key */
-    if ( !SSL_CTX_check_private_key(ctx.get()) )
-    {
-        printf("Private key does not match the public certificate\n");
-        abort();
-    }
+  /* verify private key */
+  if (!SSL_CTX_check_private_key(ctx.get()))
+  {
+    printf("Private key does not match the public certificate\n");
+    abort();
+  }
 
-  // the certificates in the chain are listed in ca-chain.cert, and loaded via SSL_CTX_use_certificate_file
-  // if (SSL_CTX_use_certificate_chain_file(ctx.get(), server_cert_path) <= 0)
+  // load a certificate file
+  // if (SSL_CTX_load_verify_locations(ctx.get(), client_cert_path, nullptr) != 1)
   // {
-  //   my::print_errors_and_exit("Error loading CA chain certificate");
+  //   my::print_errors_and_exit("Error setting up trust store");
   // }
 
-  if (SSL_CTX_load_verify_locations(ctx.get(), client_cert_path, nullptr) != 1)
-  {
-    my::print_errors_and_exit("Error setting up trust store");
-  }
+  // load CA from folder
+  // using `c_reash .` at the folder which stores CA files to generate subject name hash soft links
+  // if (SSL_CTX_load_verify_locations(ctx.get(), nullptr, "/home/osboxes/cpp/ca/root/ca/intermediate/certs/all/") != 1)
+  // {
+  //   my::print_errors_and_exit("Error setting up trust store");
+  // }
+
+  int ret = 0;
+  X509_STORE *store = SSL_CTX_get_cert_store(ctx.get());
+  X509_LOOKUP *lookup = X509_STORE_add_lookup(store, X509_LOOKUP_hash_dir());
+  // same result as 'SSL_CTX_load_verify_locations'
+  ret = X509_LOOKUP_add_dir(lookup, "/home/osboxes/cpp/ca/root/ca/intermediate/certs/all/", X509_FILETYPE_PEM);
+  printf("X509_LOOKUP_add_dir ret = %d\n", ret);
+
+  // load crl file
+  ret = X509_load_crl_file(lookup, "/home/osboxes/cpp/ca/root/ca/intermediate/crl/intermediate.crl.pem", X509_FILETYPE_PEM);
+  printf("X509_load_crl_file ret = %d\n", ret);
+
+  // same crl will be ignored
+  ret = X509_load_cert_crl_file(lookup, "/home/osboxes/cpp/ca/root/ca/intermediate/crl/intermediate.crl.pem", X509_FILETYPE_PEM);
+  printf("X509_load_cert_crl_file ret = %d\n", ret);
+
+  // X509_V_FLAG_CRL_CHECK enables CRL checking for the certificate chain leaf certificate. An error occurs if a suitable CRL cannot be found.
+  // X509_V_FLAG_CRL_CHECK_ALL enables CRL checking for the entire certificate chain. If check all, intermediate and root certificate not
+  //    on the CRL will result in verification error - 'X509_V_ERR_UNABLE_TO_GET_CRL'
+  X509_STORE_set_flags(store, X509_V_FLAG_CRL_CHECK /* | X509_V_FLAG_CRL_CHECK_ALL*/);
 
   // Ask for client certificate
   // verify_callback will be used as preverify
