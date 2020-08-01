@@ -14,7 +14,11 @@
         "${fileDirname}/${fileBasenameNoExtension}.out",
         "-L/home/osboxes/cpp/lib/openssl/",
         "-lcrypto",
-        "-lssl"
+        "-lssl",
+        "/home/osboxes/cpp/googletest/googletest/src/gtest-all.cc",
+        "-I/home/osboxes/cpp/googletest/googletest/include/",
+        "-I/home/osboxes/cpp/googletest/googletest/",
+        "-lpthread"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
