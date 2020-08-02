@@ -23,5 +23,7 @@ Added support of:
 
 ## Examples of using openssl
 
+* Block Cipher
+  * symmetric-cryptography
 * Base64
 * ...
