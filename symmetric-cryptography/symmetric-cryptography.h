@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <openssl/evp.h>
+#include <openssl/err.h>
 #include <openssl/provider.h>
 
 #include "../support-infrastructure/seed_prng.h"
@@ -59,9 +60,27 @@ namespace my
             return 1;
         }
 
+        int setup_for_encryption_ex(const EVP_CIPHER *cipher)
+        {
+            ctx_.reset(EVP_CIPHER_CTX_new());
+
+            if (!seed_prng(2048))
+                return 0;
+
+            select_random_key(key, EVP_MAX_KEY_LENGTH);
+            select_random_iv(iv, EVP_MAX_IV_LENGTH);
+            EVP_EncryptInit_ex(ctx_.get(), cipher, NULL, key, iv);
+            return 1;
+        }
+
         void setup_for_decryption(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
         {
             EVP_DecryptInit(ctx_.get(), cipher, key, iv);
+        }
+
+        void setup_for_decryption_ex(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
+        {
+            EVP_DecryptInit_ex(ctx_.get(), cipher, NULL, key, iv);
         }
 
         void load_providers()
@@ -203,6 +222,129 @@ namespace my
             strncpy((char *)ret, decryptedStr.c_str(), decryptedStr.length());
             ret[decryptedStr.length()] = '\0';
             return ret;
+        }
+
+        int counter_encrypt_or_decrypt(EVP_CIPHER_CTX *ctx, char *pt, char *ct, int len, unsigned char *counter)
+        {
+            int i, j, where = 0, num, bl = EVP_CIPHER_CTX_block_size(ctx);
+            unsigned char encr_ctrs[len + bl]; /* Encrypted counters. */
+            if (EVP_CIPHER_CTX_mode(ctx) != EVP_CIPH_ECB_MODE)
+                return -1;
+            /* <= is correct, so that we handle any possible non-aligned data. */
+            for (i = 0; i <= len / bl; i++)
+            {
+                /* Encrypt the current counter. */
+                EVP_EncryptUpdate(ctx, &encr_ctrs[where], &num, counter, bl);
+                where += num;
+                /* Increment the counter. Remember it's an array of single characters */
+                for (j = 0; j < bl / sizeof(char); j++)
+                {
+                    if (++counter[j])
+                        break;
+                }
+            }
+            /* XOR the key stream with the first buffer, placing the results in the
+             * second buffer.
+             */
+            for (i = 0; i < len; i++)
+                ct[i] = pt[i] ^ encr_ctrs[i];
+            return 1; /* Success. */
+        }
+
+        int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
+                    unsigned char *iv, unsigned char *ciphertext)
+        {
+            EVP_CIPHER_CTX *ctx = ctx_.get();
+
+            int len;
+
+            int ciphertext_len;
+
+            /* Create and initialise the context */
+            // if (!(ctx = EVP_CIPHER_CTX_new()))
+            //     handleErrors();
+
+            /*
+             * Initialise the encryption operation. IMPORTANT - ensure you use a key
+             * and IV size appropriate for your cipher
+             * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+             * IV size for *most* modes is the same as the block size. For AES this
+             * is 128 bits
+             */
+            // if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, key, iv))
+            //     handleErrors();
+
+            /*
+             * Provide the message to be encrypted, and obtain the encrypted output.
+             * EVP_EncryptUpdate can be called multiple times if necessary
+             */
+            if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+                handleErrors();
+            ciphertext_len = len;
+
+            /*
+             * Finalise the encryption. Further ciphertext bytes may be written at
+             * this stage.
+             */
+            if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
+                handleErrors();
+            ciphertext_len += len;
+
+            /* Clean up */
+            // EVP_CIPHER_CTX_free(ctx);
+
+            return ciphertext_len;
+        }
+
+        int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
+                    unsigned char *iv, unsigned char *plaintext)
+        {
+            EVP_CIPHER_CTX *ctx = ctx_.get();
+
+            int len;
+
+            int plaintext_len;
+
+            /* Create and initialise the context */
+            // if (!(ctx = EVP_CIPHER_CTX_new()))
+            //     handleErrors();
+
+            /*
+             * Initialise the decryption operation. IMPORTANT - ensure you use a key
+             * and IV size appropriate for your cipher
+             * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+             * IV size for *most* modes is the same as the block size. For AES this
+             * is 128 bits
+             */
+            // if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, key, iv))
+            //     handleErrors();
+
+            /*
+             * Provide the message to be decrypted, and obtain the plaintext output.
+             * EVP_DecryptUpdate can be called multiple times if necessary.
+             */
+            if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+                handleErrors();
+            plaintext_len = len;
+
+            /*
+             * Finalise the decryption. Further plaintext bytes may be written at
+             * this stage.
+             */
+            if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
+                handleErrors();
+            plaintext_len += len;
+
+            /* Clean up */
+            // EVP_CIPHER_CTX_free(ctx);
+
+            return plaintext_len;
+        }
+
+        void handleErrors(void)
+        {
+            ERR_print_errors_fp(stderr);
+            abort();
         }
 
         void incremental_send(unsigned char *str, int)
