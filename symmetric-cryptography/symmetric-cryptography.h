@@ -7,97 +7,18 @@
 #include <openssl/err.h>
 #include <openssl/provider.h>
 
-#include "../support-infrastructure/seed_prng.h"
-#include "../utility/utility.h"
+#include "Cipher.h"
 
 namespace my
 {
-
-    template <class T>
-    struct DeleterOf;
-    template <>
-    struct DeleterOf<EVP_CIPHER_CTX>
+    class SymmetricCryptography : public Cipher
     {
-        void operator()(EVP_CIPHER_CTX *p) const { EVP_CIPHER_CTX_free(p); }
-    };
-
-    template <>
-    struct DeleterOf<OSSL_PROVIDER>
-    {
-        void operator()(OSSL_PROVIDER *p) const { OSSL_PROVIDER_unload(p); }
-    };
-
-    template <class MyType>
-    using UniquePtr = std::unique_ptr<MyType, my::DeleterOf<MyType>>;
-
-    class SymmetricCryptography
-    {
-        my::UniquePtr<EVP_CIPHER_CTX> ctx_;
-        my::UniquePtr<OSSL_PROVIDER> legacyProvider_;
-        my::UniquePtr<OSSL_PROVIDER> defaultProvider_;
-
     public:
         SymmetricCryptography(SymmetricCryptography &&) = delete;
         SymmetricCryptography &operator=(SymmetricCryptography &&) = delete;
 
-        unsigned char key[EVP_MAX_BLOCK_LENGTH];
-        unsigned char iv[EVP_MAX_IV_LENGTH];
-
         explicit SymmetricCryptography()
         {
-        }
-
-        int setup_for_encryption(const EVP_CIPHER *cipher)
-        {
-            ctx_.reset(EVP_CIPHER_CTX_new());
-
-            if (!seed_prng(2048))
-                return 0;
-
-            select_random_key(key, EVP_MAX_KEY_LENGTH);
-            select_random_iv(iv, EVP_MAX_IV_LENGTH);
-            EVP_EncryptInit(ctx_.get(), cipher, key, iv);
-            return 1;
-        }
-
-        int setup_for_encryption_ex(const EVP_CIPHER *cipher)
-        {
-            ctx_.reset(EVP_CIPHER_CTX_new());
-
-            if (!seed_prng(2048))
-                return 0;
-
-            select_random_key(key, EVP_MAX_KEY_LENGTH);
-            select_random_iv(iv, EVP_MAX_IV_LENGTH);
-            EVP_EncryptInit_ex(ctx_.get(), cipher, NULL, key, iv);
-            return 1;
-        }
-
-        void setup_for_decryption(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
-        {
-            EVP_DecryptInit(ctx_.get(), cipher, key, iv);
-        }
-
-        void setup_for_decryption_ex(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
-        {
-            EVP_DecryptInit_ex(ctx_.get(), cipher, NULL, key, iv);
-        }
-
-        void load_providers()
-        {
-            /* Load Multiple providers into the default (NULL) library context */
-            legacyProvider_.reset(OSSL_PROVIDER_load(NULL, "legacy"));
-            if (legacyProvider_.get() == NULL)
-            {
-                printf("Failed to load Legacy provider\n");
-                exit(EXIT_FAILURE);
-            }
-            defaultProvider_.reset(OSSL_PROVIDER_load(NULL, "default"));
-            if (defaultProvider_.get() == NULL)
-            {
-                printf("Failed to load Default provider\n");
-                exit(EXIT_FAILURE);
-            }
         }
 
         unsigned char *encrypt(unsigned char *data, int inl, int *rb)
@@ -271,7 +192,7 @@ namespace my
              * IV size for *most* modes is the same as the block size. For AES this
              * is 128 bits
              */
-            // if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, key, iv))
+            // if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, key_, iv_))
             //     handleErrors();
 
             /*
@@ -316,7 +237,7 @@ namespace my
              * IV size for *most* modes is the same as the block size. For AES this
              * is 128 bits
              */
-            // if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, key, iv))
+            // if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, key_, iv_))
             //     handleErrors();
 
             /*

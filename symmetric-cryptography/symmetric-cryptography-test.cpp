@@ -50,7 +50,7 @@ protected:
         encryptedStr = sc->encrypt((unsigned char *)str.c_str(), str.length(), &encryptedStrLen);
         printf("str '%s' encrypted, length of cipher text is %d bytes\n", str.c_str(), encryptedStrLen);
 
-        sc->setup_for_decryption(cipher, sc->key, sc->iv);
+        sc->setup_for_decryption(cipher, sc->key_, sc->iv_);
 
         decryptedStr = sc->decrypt(encryptedStr, encryptedStrLen);
 
@@ -69,8 +69,8 @@ void printCipherInfo(const EVP_CIPHER* cipher)
 {
     printf("\ncipher name: %s\n", EVP_CIPHER_name(cipher));
     printf("block size: %d\n", EVP_CIPHER_block_size(cipher));
-    printf("key length: %d\n", EVP_CIPHER_key_length(cipher));
-    printf("iv length: %d\n", EVP_CIPHER_iv_length(cipher));
+    printf("key_ length: %d\n", EVP_CIPHER_key_length(cipher));
+    printf("iv_ length: %d\n", EVP_CIPHER_iv_length(cipher));
     printf("\n");
 }
 
@@ -103,7 +103,7 @@ TEST_F(SymmetricCryptographyTest, idea_cbc)
     encryptedStr = sc->encrypt((unsigned char *)str.c_str(), str.length(), &encryptedStrLen);
     printf("str '%s' encrypted, length of cipher text is %d bytes\n", str.c_str(), encryptedStrLen);
 
-    sc->setup_for_decryption(EVP_idea_cbc(), sc->key, sc->iv);
+    sc->setup_for_decryption(EVP_idea_cbc(), sc->key_, sc->iv_);
 
     decryptedStr = sc->decrypt(encryptedStr, encryptedStrLen);
 
@@ -124,12 +124,12 @@ TEST_F(SymmetricCryptographyTest, aes_256_cbc)
 
     int decryptedtext_len, ciphertext_len;
 
-    ciphertext_len = sc->encrypt(plaintext, strlen((char *)plaintext), sc->key, sc->iv, ciphertext);
+    ciphertext_len = sc->encrypt(plaintext, strlen((char *)plaintext), sc->key_, sc->iv_, ciphertext);
     printf("plaintext '%s' encrypted, length of ciphertext is %d bytes\n", plaintext, ciphertext_len);
 
-    sc->setup_for_decryption_ex(EVP_aes_256_cbc(), sc->key, sc->iv);
+    sc->setup_for_decryption_ex(EVP_aes_256_cbc(), sc->key_, sc->iv_);
 
-    decryptedtext_len = sc->decrypt(ciphertext, ciphertext_len, sc->key, sc->iv, decryptedtext);
+    decryptedtext_len = sc->decrypt(ciphertext, ciphertext_len, sc->key_, sc->iv_, decryptedtext);
 
     /* Add a NULL terminator. We are expecting printable text */
     decryptedtext[decryptedtext_len] = '\0';
