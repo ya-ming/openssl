@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "../symmetric-cryptography/symmetric-cryptography-test.cpp"
+#include "../evp/SymmetricCryptographyTest.cpp"
+#include "../evp/SymmetricCipherTest.cpp"
 
 int main(int argc, char **argv)
 {

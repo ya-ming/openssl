@@ -1,4 +1,4 @@
-#include "symmetric-cryptography.h"
+#include "SymmetricCryptography.h"
 #include <string.h>
 #include <string>
 

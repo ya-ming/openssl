@@ -29,6 +29,9 @@ namespace my
     template <class MyType>
     using UniquePtr = std::unique_ptr<MyType, my::DeleterOf<MyType>>;
 
+    typedef std::basic_string<char, std::char_traits<char>, zallocator<char> > secure_string;
+    using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
+
     class Cipher
     {
     protected:
@@ -40,47 +43,11 @@ namespace my
         Cipher(Cipher &&) = delete;
         Cipher &operator=(Cipher &&) = delete;
 
-        unsigned char key_[EVP_MAX_BLOCK_LENGTH];
+        unsigned char key_[EVP_MAX_KEY_LENGTH];
         unsigned char iv_[EVP_MAX_IV_LENGTH];
 
         explicit Cipher()
         {
-        }
-
-        int setup_for_encryption(const EVP_CIPHER *cipher)
-        {
-            ctx_.reset(EVP_CIPHER_CTX_new());
-
-            if (!seed_prng(2048))
-                return 0;
-
-            select_random_key(key_, EVP_MAX_KEY_LENGTH);
-            select_random_iv(iv_, EVP_MAX_IV_LENGTH);
-            EVP_EncryptInit(ctx_.get(), cipher, key_, iv_);
-            return 1;
-        }
-
-        int setup_for_encryption_ex(const EVP_CIPHER *cipher)
-        {
-            ctx_.reset(EVP_CIPHER_CTX_new());
-
-            if (!seed_prng(2048))
-                return 0;
-
-            select_random_key(key_, EVP_MAX_KEY_LENGTH);
-            select_random_iv(iv_, EVP_MAX_IV_LENGTH);
-            EVP_EncryptInit_ex(ctx_.get(), cipher, NULL, key_, iv_);
-            return 1;
-        }
-
-        void setup_for_decryption(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
-        {
-            EVP_DecryptInit(ctx_.get(), cipher, key_, iv_);
-        }
-
-        void setup_for_decryption_ex(const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv)
-        {
-            EVP_DecryptInit_ex(ctx_.get(), cipher, NULL, key_, iv_);
         }
 
         void load_providers()
