@@ -24,6 +24,7 @@ Added support of:
 ## Examples of using openssl
 
 * Block Cipher
-  * symmetric-cryptography
+  * SymmetricCipher
+  * ~~SymmetricCryptography~~
 * Base64
 * ...
