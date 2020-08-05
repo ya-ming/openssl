@@ -7,7 +7,7 @@
 #include <openssl/err.h>
 #include <openssl/provider.h>
 
-#include "Cipher.h"
+#include "../Cipher.h"
 
 namespace my
 {

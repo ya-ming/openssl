@@ -81,6 +81,9 @@ TEST(CipherTest, cipher)
     printCipherInfo(EVP_aes_128_cbc());
     printCipherInfo(EVP_aes_256_cbc());
     printCipherInfo(EVP_des_ede3_cbc());
+
+    printCipherInfo(EVP_aes_256_ccm());
+    printCipherInfo(EVP_aes_256_gcm());
 }
 
 TEST_F(SymmetricCryptographyTest, block_ciphers)

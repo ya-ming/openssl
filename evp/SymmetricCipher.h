@@ -3,6 +3,10 @@
 
 #include "Cipher.h"
 
+/*
+ * Standard symmetric encryption modes like CBC, CFB and OFB modes.
+ */
+
 namespace my
 {
     class SymmetricCipher : public Cipher

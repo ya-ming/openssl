@@ -32,6 +32,9 @@ namespace my
     typedef std::basic_string<char, std::char_traits<char>, zallocator<char> > secure_string;
     using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
 
+    static const int GCM_MODE = 1;
+    static const int CCM_MODE = 2;
+
     class Cipher
     {
     protected:
@@ -66,6 +69,13 @@ namespace my
                 exit(EXIT_FAILURE);
             }
         }
+
+        void handleErrors(void)
+        {
+            ERR_print_errors_fp(stderr);
+            abort();
+        }
+
     };
 } // namespace my
 #endif

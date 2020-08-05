@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "../evp/SymmetricCryptographyTest.cpp"
+#include "../evp/obselete/SymmetricCryptographyTest.cpp"
 #include "../evp/SymmetricCipherTest.cpp"
+#include "../evp/AuthenticatedSymmetricCipherTest.cpp"
 
 int main(int argc, char **argv)
 {
