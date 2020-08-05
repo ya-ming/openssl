@@ -25,6 +25,7 @@ Added support of:
 
 * Block Cipher
   * SymmetricCipher
+  * AuthenticatedSymmetricCipher
   * ~~SymmetricCryptography~~
 * Base64
 * ...

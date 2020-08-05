@@ -79,25 +79,6 @@ TEST_F(AuthenticatedSymmetricCipherTest, block_ciphers)
 
 TEST_F(AuthenticatedSymmetricCipherTest, aes_256_gcm)
 {
-    // plaintext, ciphertext, recovered text
-    // secure_string ptext = "123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+{}|:\"<>?-=[];',./";
-    // secure_string ctext, rtext;
-
-    // const unsigned int KEY_SIZE = 32;
-    // const unsigned int IV_LENTGH = 12;
-    // const unsigned int BLOCK_SIZE = 16;
-
-    // byte key[KEY_SIZE], iv[IV_LENTGH];
-    // gen_params(key, KEY_SIZE, iv, IV_LENTGH);
-
-    // cipher->encrypt(EVP_aes_256_cbc(), key, iv, BLOCK_SIZE, ptext, ctext);
-    // cipher->decrypt(EVP_aes_256_cbc(), key, iv, BLOCK_SIZE, ctext, rtext);
-
-    // OPENSSL_cleanse(key, KEY_SIZE);
-    // OPENSSL_cleanse(iv, BLOCK_SIZE);
-
-    // EXPECT_EQ(ptext, rtext);
-
     /*
      * Set up the key and iv. Do I need to say to not hard code these in a
      * real application? :-)
@@ -200,24 +181,6 @@ TEST_F(AuthenticatedSymmetricCipherTest, aes_256_gcm)
 
 TEST_F(AuthenticatedSymmetricCipherTest, aes_256_ccm)
 {
-    // plaintext, ciphertext, recovered text
-    // secure_string ptext = "123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+{}|:\"<>?-=[];',./";
-    // secure_string ctext, rtext;
-
-    // const unsigned int KEY_SIZE = 32;
-    // const unsigned int BLOCK_SIZE = 16;
-
-    // byte key[KEY_SIZE], iv[BLOCK_SIZE];
-    // gen_params(key, KEY_SIZE, iv, BLOCK_SIZE);
-
-    // cipher->encrypt(EVP_aes_256_cbc(), key, iv, BLOCK_SIZE, ptext, ctext);
-    // cipher->decrypt(EVP_aes_256_cbc(), key, iv, BLOCK_SIZE, ctext, rtext);
-
-    // OPENSSL_cleanse(key, KEY_SIZE);
-    // OPENSSL_cleanse(iv, BLOCK_SIZE);
-
-    // EXPECT_EQ(ptext, rtext);
-
     /*
      * Set up the key and iv. Do I need to say to not hard code these in a
      * real application? :-)
@@ -315,4 +278,167 @@ TEST_F(AuthenticatedSymmetricCipherTest, aes_256_ccm)
     }
 
     EXPECT_FALSE(!strcmp((const char *)plaintext, (const char *)decryptedtext));
+}
+
+TEST_F(AuthenticatedSymmetricCipherTest, aes_256_gcm2)
+{
+    // plaintext, ciphertext, recovered text
+    secure_string ptext = "The quick brown fox jumps over the lazy dog";
+    secure_string ctext, rtext;
+    // tag, additional
+    secure_string tag;
+    secure_string additional = "The five boxing wizards jump quickly.";
+
+    const unsigned int KEY_SIZE = 32;
+    const unsigned int IV_LEN = 16;
+    const unsigned int BLOCK_SIZE = 1;
+    const unsigned int TAG_LEN = 16;
+    const unsigned int MODE = my::GCM_MODE;
+
+    byte key[KEY_SIZE], iv[IV_LEN];
+    gen_params(key, KEY_SIZE, iv, IV_LEN);
+
+    int decryptedtext_len, ciphertext_len;
+
+    const EVP_CIPHER *evp_cipher = EVP_aes_256_gcm();
+
+    /* Encrypt the plaintext */
+    ciphertext_len = cipher->encrypt(evp_cipher, MODE, BLOCK_SIZE, ptext, ctext,
+        additional,
+        key,
+        iv, IV_LEN,
+        tag, TAG_LEN);
+
+    /* Do something useful with the ciphertext here */
+    printf("Ciphertext is:\n");
+    BIO_dump_fp(stdout, (const char *)ctext.c_str(), ciphertext_len);
+
+    printf("Tag is:\n");
+    BIO_dump_fp(stdout, (const char *)tag.c_str(), TAG_LEN);
+
+    /* Decrypt the ciphertext */
+    decryptedtext_len = cipher->decrypt(evp_cipher, MODE, BLOCK_SIZE, ctext, rtext,
+        additional,
+        tag, TAG_LEN,
+        key, iv, IV_LEN);
+
+    if (decryptedtext_len >= 0) {
+        /* Show the decrypted text */
+        printf("Decrypted text is:\n");
+        printf("%s\n", rtext.c_str());
+    }
+    else {
+        printf("Decryption failed\n");
+    }
+
+    EXPECT_EQ(ptext, rtext);
+    EXPECT_EQ(decryptedtext_len, ptext.size());
+
+    tag[tag.size()-1]+=0xAA;
+    printf("\nModified tag is:\n");
+    BIO_dump_fp(stdout, (const char *)tag.c_str(), TAG_LEN);
+
+
+    /* Decrypt the ciphertext with modified tag */
+    // if tag doesn't match, the ciphertext will be decrpted but the length returned will be -1
+    decryptedtext_len = cipher->decrypt(evp_cipher, MODE, BLOCK_SIZE, ctext, rtext,
+        additional,
+        tag, TAG_LEN,
+        key, iv, IV_LEN);
+
+    if (decryptedtext_len >= 0) {
+        /* Show the decrypted text */
+        printf("Decrypted text is:\n");
+        printf("%s\n", rtext.c_str());
+    }
+    else {
+        printf("Decryption failed\n");
+    }
+
+    OPENSSL_cleanse(key, KEY_SIZE);
+    OPENSSL_cleanse(iv, BLOCK_SIZE);
+
+    EXPECT_EQ(ptext, rtext);
+    EXPECT_NE(decryptedtext_len, ptext.size());
+}
+
+TEST_F(AuthenticatedSymmetricCipherTest, aes_256_ccm2)
+{
+    // plaintext, ciphertext, recovered text
+    secure_string ptext = "The quick brown fox jumps over the lazy dog";
+    secure_string ctext, rtext;
+    secure_string tag;
+    secure_string additional = "The five boxing wizards jump quickly.";
+
+    const unsigned int KEY_SIZE = 32;
+    const unsigned int IV_LEN = 12;
+    const unsigned int BLOCK_SIZE = 1;
+    const unsigned int TAG_LEN = 14;
+    const unsigned int MODE = my::CCM_MODE;
+
+    byte key[KEY_SIZE], iv[IV_LEN];
+    gen_params(key, KEY_SIZE, iv, IV_LEN);
+
+    int decryptedtext_len, ciphertext_len;
+
+    const EVP_CIPHER *evp_cipher = EVP_aes_256_ccm();
+
+    /* Encrypt the plaintext */
+    ciphertext_len = cipher->encrypt(evp_cipher, MODE, BLOCK_SIZE, ptext, ctext,
+        additional,
+        key,
+        iv, IV_LEN,
+        tag, TAG_LEN);
+
+    /* Do something useful with the ciphertext here */
+    printf("Ciphertext is:\n");
+    BIO_dump_fp(stdout, (const char *)ctext.c_str(), ciphertext_len);
+
+    printf("Tag is:\n");
+    BIO_dump_fp(stdout, (const char *)tag.c_str(), TAG_LEN);
+
+    /* Decrypt the ciphertext */
+    decryptedtext_len = cipher->decrypt(evp_cipher, MODE, BLOCK_SIZE, ctext, rtext,
+        additional,
+        tag, TAG_LEN,
+        key, iv, IV_LEN);
+
+    if (decryptedtext_len >= 0) {
+        /* Show the decrypted text */
+        printf("Decrypted text is:\n");
+        printf("%s\n", rtext.c_str());
+    }
+    else {
+        printf("Decryption failed\n");
+    }
+
+    EXPECT_EQ(ptext, rtext);
+    EXPECT_EQ(decryptedtext_len, ptext.size());
+
+    tag[tag.size()-1]+=0xAA;
+    printf("\nModified tag is:\n");
+    BIO_dump_fp(stdout, (const char *)tag.c_str(), TAG_LEN);
+
+
+    /* Decrypt the ciphertext with modified tag */
+    // if tag doesn't match, the ciphertext will be decrpted but the length returned will be -1
+    decryptedtext_len = cipher->decrypt(evp_cipher, MODE, BLOCK_SIZE, ctext, rtext,
+        additional,
+        tag, TAG_LEN,
+        key, iv, IV_LEN);
+
+    if (decryptedtext_len >= 0) {
+        /* Show the decrypted text */
+        printf("Decrypted text is:\n");
+        printf("%s\n", rtext.c_str());
+    }
+    else {
+        printf("Decryption failed\n");
+    }
+
+    OPENSSL_cleanse(key, KEY_SIZE);
+    OPENSSL_cleanse(iv, BLOCK_SIZE);
+
+    EXPECT_NE(ptext, rtext);
+    EXPECT_NE(decryptedtext_len, ptext.size());
 }
