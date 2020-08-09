@@ -25,7 +25,13 @@ Added support of:
 
 * Block Cipher
   * SymmetricCipher
+    * EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free()
+    * EVP_EncryptInit_ex(), EVP_DecryptInit_ex()
+    * EVP_EncryptUpdate(), EVP_DecryptUpdate()
+    * EVP_EncryptFinal_ex(), EVP_DecryptFinal_ex()
   * AuthenticatedSymmetricCipher
+    * EVP_CIPHER_CTX_ctrl()
+      * EVP_CTRL_'Algorithm'_SET/GET_'Param'
   * ~~SymmetricCryptography~~
 * Base64
 * ...
