@@ -23,7 +23,9 @@ Added support of:
 
 ## Examples of using openssl
 
-* Block Cipher
+[OpenSSL wiki](https://wiki.openssl.org/index.php/Main_Page)
+
+* EVP
   * SymmetricCipher
     * EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free()
     * EVP_EncryptInit_ex(), EVP_DecryptInit_ex()
