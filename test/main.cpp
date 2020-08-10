@@ -3,6 +3,7 @@
 #include "../evp/obselete/SymmetricCryptographyTest.cpp"
 #include "../evp/SymmetricCipherTest.cpp"
 #include "../evp/AuthenticatedSymmetricCipherTest.cpp"
+#include "../evp/AsymmetricEnvelopeTest.cpp"
 
 int main(int argc, char **argv)
 {

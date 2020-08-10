@@ -32,6 +32,9 @@ Added support of:
   * AuthenticatedSymmetricCipher
     * EVP_CIPHER_CTX_ctrl()
       * EVP_CTRL_'Algorithm'_SET/GET_'Param'
+  * AsymmetricEnvelope
+    * EVP_SealInit(), EVP_SealUpdate(), EVP_SealFinal()
+    * EVP_OpenInit(), EVP_OpenUpdate(), EVP_OpenFinal()
   * ~~SymmetricCryptography~~
 * Base64
 * ...
