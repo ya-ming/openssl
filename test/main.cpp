@@ -4,6 +4,7 @@
 #include "../evp/SymmetricCipherTest.cpp"
 #include "../evp/AuthenticatedSymmetricCipherTest.cpp"
 #include "../evp/AsymmetricEnvelopeTest.cpp"
+#include "../evp/KeyAndParameterGenerationTest.cpp"
 
 int main(int argc, char **argv)
 {

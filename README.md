@@ -37,6 +37,18 @@ Added support of:
   * AsymmetricEnvelope
     * EVP_SealInit(), EVP_SealUpdate(), EVP_SealFinal()
     * EVP_OpenInit(), EVP_OpenUpdate(), EVP_OpenFinal()
+  * Key and Parameter Generation
+    * EVP_PKEY_EC (for ECDSA and ECDH keys), EVP_PKEY_DSA, EVP_PKEY_DH
+    * Parameter
+      * EVP_PKEY_CTX_new_id(), EVP_PKEY_paramgen_init()
+      * EVP_PKEY_CTX_set_ec_paramgen_curve_nid(), EVP_PKEY_CTX_set_dsa_paramgen_bits(), EVP_PKEY_CTX_set_dh_paramgen_prime_len()
+      * EVP_PKEY_paramgen()
+    * Key
+      * EVP_PKEY_CTX_new(), EVP_PKEY_CTX_new_id(), EVP_PKEY_keygen_init(), EVP_PKEY_CTX_set_rsa_keygen_bits(), EVP_PKEY_keygen()
+    * HMAC and CMAC
+      * EVP_PKEY_CTX_ctrl()
+      * EVP_MD_CTX_new(), EVP_DigestSignInit(), EVP_DigestSignUpdate(), EVP_DigestSignFinal(), EVP_MD_CTX_free()
+      * EVP_PKEY_new_mac_key()
   * ~~SymmetricCryptography~~
 * Base64
 * ...
