@@ -5,6 +5,7 @@
 #include "../evp/AuthenticatedSymmetricCipherTest.cpp"
 #include "../evp/AsymmetricEnvelopeTest.cpp"
 #include "../evp/KeyAndParameterGenerationTest.cpp"
+#include "../evp/DiffieHellmanTest.cpp"
 
 int main(int argc, char **argv)
 {

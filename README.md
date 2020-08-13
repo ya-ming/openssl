@@ -49,6 +49,11 @@ Added support of:
       * EVP_PKEY_CTX_ctrl()
       * EVP_MD_CTX_new(), EVP_DigestSignInit(), EVP_DigestSignUpdate(), EVP_DigestSignFinal(), EVP_MD_CTX_free()
       * EVP_PKEY_new_mac_key()
+    * Diffie Hellman
+      * Low-level
+        * DH_new(), DH_generate_parameters_ex(), DH_check(), DH_generate_key(), DH_compute_key()
+      * evp
+        * EVP_PKEY_derive_init(), EVP_PKEY_derive_set_peer(), EVP_PKEY_derive(), EVP_PKEY_derive()
   * ~~SymmetricCryptography~~
 * Base64
 * ...
