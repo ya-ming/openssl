@@ -54,6 +54,8 @@ Added support of:
         * DH_new(), DH_generate_parameters_ex(), DH_check(), DH_generate_key(), DH_compute_key()
       * evp
         * EVP_PKEY_derive_init(), EVP_PKEY_derive_set_peer(), EVP_PKEY_derive(), EVP_PKEY_derive()
+    * Digest
+      * EVP_DigestInit_ex(), EVP_DigestUpdate(), EVP_DigestFinal_ex()
   * ~~SymmetricCryptography~~
 * Base64
 * ...

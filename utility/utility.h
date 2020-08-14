@@ -88,4 +88,10 @@ void select_random_iv(unsigned char *iv, int b)
     RAND_pseudo_bytes(iv, b);
 }
 
+void handleErrors(void)
+{
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
 #endif

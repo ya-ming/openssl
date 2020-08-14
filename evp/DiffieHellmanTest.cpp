@@ -39,12 +39,6 @@ protected:
     // for SymmetricCipher.
 };
 
-void handleErrors(void)
-{
-    ERR_print_errors_fp(stderr);
-    abort();
-}
-
 void DiffieHellmanGenerateKeys(DH *&privkey)
 {
     int codes;
