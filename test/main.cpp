@@ -7,6 +7,7 @@
 #include "../evp/KeyAndParameterGenerationTest.cpp"
 #include "../evp/DiffieHellmanTest.cpp"
 #include "../evp/DigestTest.cpp"
+#include "../evp/KeyDerivationTest.cpp"
 
 int main(int argc, char **argv)
 {

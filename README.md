@@ -56,6 +56,8 @@ Added support of:
       * EVP_PKEY_derive_init(), EVP_PKEY_derive_set_peer(), EVP_PKEY_derive(), EVP_PKEY_derive()
   * Digest
     * EVP_DigestInit_ex(), EVP_DigestUpdate(), EVP_DigestFinal_ex()
+  * Key Derivation
+    * EVP_KDF, EVP_KDF_CTX, EVP_KDF_fetch(), EVP_KDF_CTX_new(), EVP_KDF_free(), EVP_KDF_CTX_set_params(), EVP_KDF_derive(), EVP_KDF_CTX_free()
   * ~~SymmetricCryptography~~
 * Base64
 * ...
