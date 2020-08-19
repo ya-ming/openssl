@@ -9,6 +9,8 @@
 #include "../evp/DigestTest.cpp"
 #include "../evp/KeyDerivationTest.cpp"
 
+#include "../code-and-ciphers/SimplifiedLorenzCipherMachineTest.cpp"
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

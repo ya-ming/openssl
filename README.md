@@ -59,5 +59,6 @@ Added support of:
   * Key Derivation
     * EVP_KDF, EVP_KDF_CTX, EVP_KDF_fetch(), EVP_KDF_CTX_new(), EVP_KDF_free(), EVP_KDF_CTX_set_params(), EVP_KDF_derive(), EVP_KDF_CTX_free()
   * ~~SymmetricCryptography~~
-* Base64
-* ...
+
+* code-and-ciphers
+  * Simplified Lorenz Cipher Machine
