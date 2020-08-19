@@ -60,5 +60,6 @@ Added support of:
     * EVP_KDF, EVP_KDF_CTX, EVP_KDF_fetch(), EVP_KDF_CTX_new(), EVP_KDF_free(), EVP_KDF_CTX_set_params(), EVP_KDF_derive(), EVP_KDF_CTX_free()
   * ~~SymmetricCryptography~~
 
-* code-and-ciphers
-  * Simplified Lorenz Cipher Machine
+## code-and-ciphers
+
+* Simplified Lorenz Cipher Machine
