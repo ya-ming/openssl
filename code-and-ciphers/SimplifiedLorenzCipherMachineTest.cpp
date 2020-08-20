@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <string>
 
 #define CODE_A 0x18
 #define CODE_B 0x13
@@ -42,6 +43,38 @@ protected:
     SimplifiedLorenzCipherMachineTest()
     {
         // You can do set-up work for each test here.
+        code_to_string[0x18] = 'A';
+        code_to_string[0x13] = 'B';
+        code_to_string[0xE] = 'C';
+        code_to_string[0x12] = 'D';
+        code_to_string[0x10] = 'E';
+        code_to_string[0x16] = 'F';
+        code_to_string[0xB] = 'G';
+        code_to_string[0x5] = 'H';
+        code_to_string[0xC] = 'I';
+        code_to_string[0x1A] = 'J';
+        code_to_string[0x1E] = 'K';
+        code_to_string[0x9] = 'L';
+        code_to_string[0x7] = 'M';
+        code_to_string[0x6] = 'N';
+        code_to_string[0x3] = 'O';
+        code_to_string[0xD] = 'P';
+        code_to_string[0x1D] = 'Q';
+        code_to_string[0xA] = 'R';
+        code_to_string[0x14] = 'S';
+        code_to_string[0x1] = 'T';
+        code_to_string[0x1C] = 'U';
+        code_to_string[0xF] = 'V';
+        code_to_string[0x19] = 'W';
+        code_to_string[0x17] = 'X';
+        code_to_string[0x15] = 'Y';
+        code_to_string[0x11] = 'Z';
+        code_to_string[0x2] = '3';
+        code_to_string[0x8] = '4';
+        code_to_string[0x1F] = '8';
+        code_to_string[0x4] = '9';
+        code_to_string[0x1B] = '+';
+        code_to_string[0] = '/';
     }
 
     ~SimplifiedLorenzCipherMachineTest() override
@@ -66,6 +99,7 @@ protected:
 
     // Class members declared here can be used by all tests in the test suite
     // for SymmetricCipher.
+    char code_to_string[100];
 };
 
 int encipher(int input, int key)
@@ -83,8 +117,8 @@ const int wheel_s[] = {CODE_A, CODE_A, CODE_B, CODE_B};
 
 void encipher(int *input, int size, int *output, int k, int s)
 {
-    k = k%14;
-    s = s%4;
+    k = k % 14;
+    s = s % 4;
 
     for (int i = 0; i < size; i++)
     {
@@ -189,4 +223,161 @@ TEST_F(SimplifiedLorenzCipherMachineTest, UYFX94LFVT8BQZ_4_1)
     EXPECT_EQ(output[11], CODE_A);
     EXPECT_EQ(output[12], CODE_G);
     EXPECT_EQ(output[13], CODE_E);
+}
+
+int arrayOfDeltaK[14][53] = {0};
+int arrayOfDeltaP[54] = {0};
+int arrayofK[54] = {0};
+int arrayOfS[54] = {0};
+
+void generateArrayOfDeltaP(int *p)
+{
+    for (int i = 0; i < 54 - 1; i++)
+    {
+        arrayOfDeltaP[i] = p[i] ^ p[i+1];
+    }
+}
+
+void generateArrayOfDeltaK()
+{
+    for (int l = 0; l < 14; l++)
+    {
+        for (int i = 0, j = l; i < 54 - 1; i++, j++)
+        {
+            int j_plus_1 = j + 1;
+            if (j == 13)
+                j_plus_1 = 0;
+            arrayOfDeltaK[l][i] = wheel_k[j] ^ wheel_k[j_plus_1];
+            if (j == 14 - 1)
+            {
+                j = -1;
+            }
+        }
+    }
+}
+
+void generateArrayOfK(int k)
+{
+    for (int i = 0; i < 54; i++)
+    {
+        arrayofK[i] = wheel_k[k];
+        k++;
+        if (k == 14)
+            k = 0;
+    }
+}
+
+void generateArrayOfS(int s)
+{
+    for (int i = 0; i < 54; i++)
+    {
+        arrayOfS[i] = wheel_s[s];
+        s++;
+        if (s == 4)
+            s = 0;
+    }
+}
+
+TEST_F(SimplifiedLorenzCipherMachineTest, BreakingThisCipher)
+{
+
+    // 99HERE99IS99A99TEST99MESSAGE99FOR99YOU99TO99TRY99OUT99
+    int input[54] = {
+        CODE_9, CODE_9, CODE_H, CODE_E, CODE_R, CODE_E,
+        CODE_9, CODE_9, CODE_I, CODE_S, CODE_9, CODE_9,
+        CODE_A, CODE_9, CODE_9, CODE_T, CODE_E, CODE_S,
+        CODE_T, CODE_9, CODE_9, CODE_M, CODE_E, CODE_S,
+        CODE_S, CODE_A, CODE_G, CODE_E, CODE_9, CODE_9,
+        CODE_F, CODE_O, CODE_R, CODE_9, CODE_9, CODE_Y,
+        CODE_O, CODE_U, CODE_9, CODE_9, CODE_T, CODE_O,
+        CODE_9, CODE_9, CODE_T, CODE_R, CODE_Y, CODE_9,
+        CODE_9, CODE_O, CODE_U, CODE_T, CODE_9, CODE_9};
+    int output[54] = {0};
+
+    encipher(input, 54, output, 6, 2);
+
+    generateArrayOfDeltaP(input);
+    printf("  Delta P: ");
+    for (int i = 0; i < 53; i++)
+    {
+        printf("%c", code_to_string[arrayOfDeltaP[i]]);
+    }
+    printf("\n");
+
+    int dZ[54] = {0};
+    int dZ_xor_dK[14][54] = {0};
+    int Z_xor_K7_xor_S[4][54] = {0};
+
+    for (int i = 0, j = 0; i < 54 - 1; i++, j++)
+    {
+        dZ[i] = output[i] ^ output[i + 1];
+    }
+
+    generateArrayOfDeltaK();
+
+    printf("Encoded Z: ");
+    for (int i = 0; i < 54; i++)
+    {
+        printf("%c", code_to_string[output[i]]);
+    }
+    printf("\n");
+
+    printf("  Delta Z: ");
+    for (int i = 0; i < 53; i++)
+    {
+        printf("%c", code_to_string[dZ[i]]);
+    }
+    printf("\n");
+
+    for (int l = 0; l < 14; l++)
+    {
+        printf(" Delta K%d: ", l + 1);
+        for (int i = 0; i < 53; i++)
+        {
+            printf("%c", code_to_string[arrayOfDeltaK[l][i]]);
+        }
+        printf("\n");
+
+        for (int i = 0; i < 53; i++)
+        {
+            dZ_xor_dK[l][i] = dZ[i] ^ arrayOfDeltaK[l][i];
+        }
+
+        int count_of_0 = 0;
+        printf("   dZ ^dK: ");
+        for (int i = 0; i < 53; i++)
+        {
+            if (dZ_xor_dK[l][i] == 0)
+            {
+                count_of_0++;
+            }
+            printf("%c", code_to_string[dZ_xor_dK[l][i]]);
+        }
+        printf(" Number of '/' = %d\n", count_of_0);
+    }
+
+    printf("\n");
+    generateArrayOfK(6);
+    for (int l = 0; l < 4; l++)
+    {
+        generateArrayOfS(l);
+        printf("       S%d: ", l + 1);
+        for (int i = 0; i < 54; i++)
+        {
+            printf("%c", code_to_string[arrayOfS[i]]);
+        }
+        printf("\n");
+
+        for (int i = 0; i < 54; i++)
+        {
+            Z_xor_K7_xor_S[l][i] = output[i] ^ arrayofK[i] ^ arrayOfS[i];
+        }
+
+        printf("Decrypted m%d: ", l + 1);
+        for (int i = 0; i < 54; i++)
+        {
+            printf("%c", code_to_string[Z_xor_K7_xor_S[l][i]]);
+        }
+        printf("\n");
+    }
 }
