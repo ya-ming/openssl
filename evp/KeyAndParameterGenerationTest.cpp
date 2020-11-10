@@ -140,7 +140,7 @@ void generateKey(EVP_PKEY_CTX *&kctx, int type, EVP_PKEY *&params, EVP_PKEY *&ke
 
 void generateCMACKey(EVP_PKEY_CTX *&kctx, int type, const char *k, EVP_PKEY *&key)
 {
-        if (!(kctx = EVP_PKEY_CTX_new_id(type, NULL)))
+    if (!(kctx = EVP_PKEY_CTX_new_id(type, NULL)))
     {
         throw std::runtime_error("EVP_PKEY_CTX_new_id failed");
     }

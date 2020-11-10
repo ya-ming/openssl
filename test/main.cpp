@@ -10,6 +10,9 @@
 #include "../evp/KeyDerivationTest.cpp"
 
 #include "../code-and-ciphers/SimplifiedLorenzCipherMachineTest.cpp"
+#include "../code-and-ciphers/SimpleCipherCrackerTest.cpp"
+
+#include "../public-key-algorithms/rsa_keygen_test.cpp"
 
 int main(int argc, char **argv)
 {
